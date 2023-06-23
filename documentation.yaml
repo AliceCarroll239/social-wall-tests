@@ -1,0 +1,402 @@
+openapi: "3.0.3"
+info:
+  title: "Post wall"
+  description: |
+    Simple social network wall 
+    
+    You can view post without/with authentication
+    
+    You can create and update text post
+    
+    You can also leave likes or dislikes under other people's posts.
+  version: "1.0.0"
+
+servers:
+  - url: "http://0.0.0.0:8080"
+    description: Localhost
+  - url: "https://social-wall-learnqa.herokuapp.com"
+    description: herokuapp
+
+paths:
+  /auth/singup:
+    post:
+      summary: "Create new user"
+      tags:
+        - auth
+      requestBody:
+        description: "New user request model"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/singUpRequest'
+      responses:
+        "200":
+          description: "Successful create user"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/singUpResponse'
+        "400":
+          description: "Validation error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+  /auth/singin:
+    post:
+      summary: "Sing in"
+      tags:
+        - auth
+      requestBody:
+        description: "Sing in model"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/singInRequest'
+      responses:
+        "200":
+          description: "Successful sing in"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/singInResponse'
+        "400":
+          description: "Unsuccessful sing in"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+  /auth/logout:
+    post:
+      summary: "Logout"
+      tags:
+        - auth
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: uuid
+          required: true
+
+      responses:
+        "200":
+          description: "Successful logout"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/logoutResponse'
+        "400":
+          description: "Unsuccessful logot"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+
+  /posts/all:
+    get:
+      summary: "Get all posts"
+      tags:
+        - posts
+      responses:
+        "200":
+          description: "Successful get all posts"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getPostResponse'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+  /posts/create:
+    post:
+      summary: "Create new post"
+      tags:
+        - posts
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createPostRequest'
+      responses:
+        "200":
+          description: "Successful create post"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createPostResponse'
+        "400":
+          description: "Unknown session, other validation errors"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validError'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+  /posts/delete:
+    delete:
+      summary: "Delete post"
+      tags:
+        - posts
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deletePostRequest'
+      responses:
+        "200":
+          description: "Successful delete post"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deletePostResponse'
+        "400":
+          description: "Unknown session, other validation errors"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validError'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+  /posts/update:
+    patch:
+      summary: "Update post"
+      tags:
+        - posts
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updatePostRequest'
+      responses:
+        "200":
+          description: "Successful update post"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/updatePostResponse'
+        "400":
+          description: "Unknown session, other validation errors"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validError'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+
+  /posts/reaction:
+    post:
+      summary: "Like or dislike post"
+      tags:
+        - posts
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reactionRequest'
+      responses:
+        "200":
+          description: "Successful reaction"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/reactionResponse'
+        "400":
+          description: "Unknown session, other validation errors"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validError'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/internalError'
+
+components:
+  schemas:
+    validError:
+      type: object
+      properties:
+        message:
+          type: string
+    internalError:
+      type: object
+      properties:
+        message:
+          type: string
+
+    singUpRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+    singUpResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Hello USERNAME!"
+
+    singInRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+    singInResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        token:
+          type: string
+
+    logoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    getPostResponse:
+      type: object
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/getPostItem'
+    getPostItem:
+      type: object
+      properties:
+         id:
+           type: integer
+         author:
+           type: string
+         text:
+           type: string
+         reactions:
+           type: object
+           items:
+             allOf:
+               - $ref: '#/components/schemas/likes'
+               - $ref: '#/components/schemas/dislikes'
+    likes:
+      type: array
+      items:
+        type: string
+      example: ["Foo", "Bar", "Baz"]
+    dislikes:
+      type: array
+      items:
+        type: string
+      example: ["Qux"]
+
+    createPostRequest:
+      type: object
+      properties:
+        text:
+          type: string
+    createPostResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+
+    deletePostRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+    deletePostResponse:
+      type: object
+      properties:
+        text:
+          type: string
+
+
+    updatePostRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+    updatePostResponse:
+      type: object
+      properties:
+        text:
+          type: string
+
+    reactionRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        reaction:
+          type: boolean
+
+    reactionResponse:
+      type: object
+      properties:
+        text:
+          type: string
