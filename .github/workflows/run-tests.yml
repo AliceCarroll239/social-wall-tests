@@ -1,0 +1,23 @@
+name: Run_Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_test:
+    runs-on: [ self-hosted, example-infra ]
+
+    steps:
+      - name: Get code source
+        uses: actions/checkout@v3
+      - name: Build with Gradle
+        run: chmod +x gradlew && ./gradlew build test
+      - name: Test Report
+        uses: phoenix-actions/test-reporting@v10
+        id: test-report
+        if: success() || failure()
+        with:
+          fail-on-error: 'false'
+          name: Report Test
+          path: build/test-results/test/TEST-*.xml
+          reporter: java-junit
